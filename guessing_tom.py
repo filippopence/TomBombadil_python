@@ -86,7 +86,7 @@ async def guess(ctx, max:int=len(data)):
     print(i, name)
     tries = 0
     def check(m):
-        return m.author == ctx.author and m.channel == ctx.message.channel
+        return m.channel == ctx.message.channel #m.author == ctx.author and 
     for j in range(10000):
         guess = await client.wait_for('message', check=check)
         if guess.content.startswith('is'):
