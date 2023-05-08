@@ -11,7 +11,7 @@ from dotenv import load_dotenv, find_dotenv
 
 load_dotenv(find_dotenv())
 
-client = commands.Bot(command_prefix = '.', intents = discord.Intents.all())
+client = commands.Bot(command_prefix = '!', intents = discord.Intents.all())
 with open("Cards.json", "r", encoding="utf8") as f:
     data = json.load(f)
 
