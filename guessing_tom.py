@@ -141,19 +141,19 @@ async def guess(ctx, max:int=len(data_official)):
     embed.add_field(name = "<:defense:1079780291138289725>", value = data_official[i]['defense'])
     embed.add_field(name = "<:hitpoints:1082806330508722266>", value = data_official[i]['health'])
     embed.add_field(name = "Traits", value = data_official[i]['traits'])
-    if data[i]['sphere_code'] == 'spirit':
+    if data_official[i]['sphere_code'] == 'spirit':
         card_sphere = '<:spirit:1079729428638208032>'
-    elif data[i]['sphere_code'] == 'lore':
+    elif data_official[i]['sphere_code'] == 'lore':
         card_sphere = '<:lore:1079729387458547752>'
-    elif data[i]['sphere_code'] == 'leadership':
+    elif data_official[i]['sphere_code'] == 'leadership':
         card_sphere = '<:leadership:1079729503334572032>'
-    elif data[i]['sphere_code'] == 'tactics':
+    elif data_official[i]['sphere_code'] == 'tactics':
         card_sphere = '<:tactics:1079729464398856252>'
-    elif data[i]['sphere_code'] == 'baggins':
+    elif data_official[i]['sphere_code'] == 'baggins':
         card_sphere = '<:baggins:1079729273004363786>'
-    elif data[i]['sphere_code'] == 'fellowship':
+    elif data_official[i]['sphere_code'] == 'fellowship':
         card_sphere = '<:fellowship:1079729539342675988>'
-    elif data[i]['sphere_code'] == 'neutral':
+    elif data_official[i]['sphere_code'] == 'neutral':
         card_sphere = 'Neutral'
     embed.add_field(name = "Sphere", value = card_sphere)
     dict = {"<b>": "**",  # define desired replacements here
