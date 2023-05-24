@@ -1,9 +1,6 @@
 import discord
 import pandas as pd
 from discord.ext import commands
-from colorama import Back, Fore, Style
-import time
-import platform
 import random 
 import json
 from unidecode import unidecode
@@ -18,18 +15,10 @@ with open("Cards.json", "r", encoding="utf8") as f:
         if data[i]['is_official'] == True:
             data_official.append(data[i])
 
-@client.event
-async def on_ready():
-    prfx = (Back.BLACK + Fore.GREEN + time.strftime("%H:%M:%S UTC+2", time.localtime()) + Back.RESET + Fore.WHITE + Style.BRIGHT)
-    print(prfx + " Logged in as " + Fore.YELLOW + client.user.name)
-    print(prfx + " Bot ID " + Fore.YELLOW + str(client.user.id))
-    print(prfx + " Discord Version " + Fore.YELLOW + discord.__version__)
-    print(prfx + " Python Version " + Fore.YELLOW + str(platform.python_version()))
-
-@client.command()
-async def ge(ctx):
-    print(ctx.guild.emojis)
-    await ctx.send(f"<:spirit:1081702484784992289>")
+# @client.command()
+# async def ge(ctx):
+#     print(ctx.guild.emojis)
+#     await ctx.send(f"<:spirit:1081702484784992289>")
 
 @client.command(aliases=['guess+'])
 async def guessall(ctx, max:int=len(data)):
