@@ -1,25 +1,34 @@
 import discord
-import pandas as pd
-from discord.ext import commands
+from discord.ext import commands, tasks
 import random 
 import json
 from unidecode import unidecode
 import os
 from dotenv import load_dotenv, find_dotenv
+import datetime
+import time
 
 client = commands.Bot(command_prefix = '!', intents = discord.Intents.all())
 with open("Cards.json", "r", encoding="utf8") as f:
     data = json.load(f)
     data_official = []
-    for i in range(len(data)):
-        if data[i]['is_official'] == True:
-            data_official.append(data[i])
+    CardList = []
+    CardListName = []
+    PlayerCards = []
+    for n in range(len(data)):
+        if data[n]['is_official'] == True:
+            data_official.append(data[n])
+            CardListName.append(unidecode(data[n]['name']).upper())
+            CardList.append(data[n])
+            if data[n]['type_name'] in ['Ally', 'Hero', 'Attachment', 'Event']:
+                PlayerCards.append(data[n])
 
 # @client.command()
 # async def ge(ctx):
 #     print(ctx.guild.emojis)
 #     await ctx.send(f"<:spirit:1081702484784992289>")
 
+# GUESS UNOFFICIAL
 @client.command(aliases=['guess+'])
 async def guessall(ctx, max:int=len(data)):
     i = random.randint(1,max)
@@ -107,8 +116,7 @@ async def guessall(ctx, max:int=len(data)):
         else:
             await ctx.send("You have to type `is` followed by the name of the card!")
 
-
-
+# GUESS OFFICIAL
 @client.command(aliases=['guess1'])
 async def guess(ctx, max:int=len(data_official)):
     i = random.randint(1,max)
@@ -196,6 +204,100 @@ async def guess(ctx, max:int=len(data_official)):
         else:
             await ctx.send("You have to type `is` followed by the name of the card!")
     
+
+# SEARCH CARD
+@client.command()
+async def hobimg(ctx, card=None):
+    message = ctx.message.content.split(' ')
+    message.pop(0)
+    cc = message
+    message = " ".join(message)
+    card = unidecode(message).upper()
+    print(f"Looking for: {card}")
+    def search(card_list, string):
+        index_list = []
+        for n in range(len(card_list)):
+            if card_list[n].find(string) != -1:
+                index_list.append(n)
+        return index_list
+    CardIndexes = search(CardListName, card)
+    if len(CardIndexes) == len(CardList):
+        await ctx.send('I am sorry, but I need at least a name to find a card')
+    elif len(CardIndexes) == 1:
+        await ctx.send(CardList[CardIndexes[0]]['imagesrc'])
+    elif len(CardIndexes) == 0:
+        await ctx.send(f"No cards found matching '{cc}'.")
+    else:
+        dict = {"<b>": "**",  # define desired replacements here
+            "</b>": "**", 
+            "<i>": "_", 
+            "</i>": "_", 
+            "lore": "<:lore:1079729387458547752>",
+            "leadership": "<:leadership:1079729503334572032>",
+            "spirit": "<:spirit:1079729428638208032>",
+            "tactics": "<:tactics:1079729464398856252>",
+            "fellowship": "<:fellowship:1079729539342675988>",
+            "baggins": "<:baggins:1079729273004363786>",
+            "none": " ",
+            "neutral": " "
+            } 
+        def replace_all(text, dic):
+            for i, j in dic.items():
+                text = text.replace(i, j)
+            return text
+        cards_found = []
+        if len(CardIndexes) > 20:
+            max = 20
+            await ctx.send(f"I've found {len(CardIndexes)} cards (Sending 20). Reply with the number of the one you want")
+        else:
+            max = len(CardIndexes)
+            await ctx.send(f"I've found {len(CardIndexes)} cards. Reply with the number of the one you want")
+        for ids in range(max):
+            sphere = replace_all(CardList[CardIndexes[int(ids)]]['sphere_code'], dict)
+            cards_found.append((f"{ids+1}. {sphere} **{CardList[CardIndexes[int(ids)]]['name']}**\n_{CardList[CardIndexes[int(ids)]]['type_name']}_ ({CardList[CardIndexes[int(ids)]]['pack_name']})"))
+        await ctx.send('\n'.join(cards_found))
+        def check(m):
+            return m.channel == ctx.message.channel #m.author == ctx.author and 
+        for j in range(1):
+            id = await client.wait_for('message', check=check)
+            id = id.content
+            try:
+                await ctx.send(CardList[CardIndexes[int(id)-1]]['imagesrc'])
+            except:
+                await ctx.send("You have to type the number of the card you want!")
+
+
+# CARD OF THE DAY
+WHEN = datetime.time(10, 0, 0)  # set time here in UTC - 10:00 AM
+CHANNEL_ID = 1080119360422682746 # Put your channel id here
+
+@tasks.loop(time=WHEN) 
+async def send_message():
+    channel = client.get_channel(CHANNEL_ID)
+    i = random.randint(1,len(PlayerCards))
+    await channel.send("**Card of the day!**")
+    card = await channel.send(PlayerCards[i]['imagesrc'])
+    emojis = ["\u0031\ufe0f\u20e3", '\u0032\ufe0f\u20e3', '\u0033\ufe0f\u20e3', '\u0034\ufe0f\u20e3', '\u0035\ufe0f\u20e3']
+    time.sleep(0.5)
+    for emoji in emojis:
+        await card.add_reaction(emoji)
+
+@client.event
+async def on_ready():
+    send_message.start()
+
+# .day command
+@client.command()
+async def day(ctx):
+    channel = client.get_channel(CHANNEL_ID)
+    i = random.randint(1,len(PlayerCards))
+    await channel.send("**Card of the day!**")
+    card = await channel.send(PlayerCards[i]['imagesrc'])
+    emojis = ["\u0031\ufe0f\u20e3", '\u0032\ufe0f\u20e3', '\u0033\ufe0f\u20e3', '\u0034\ufe0f\u20e3', '\u0035\ufe0f\u20e3']
+    time.sleep(0.5)
+    for emoji in emojis:
+        await card.add_reaction(emoji)
+
 
 
 load_dotenv(find_dotenv())
