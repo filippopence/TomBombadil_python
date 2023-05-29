@@ -14,8 +14,12 @@ with open("Cards.json", "r", encoding="utf8") as f:
     data_official = []
     CardList = []
     CardListName = []
+    CardListAll = []
+    CardListNameAll = []
     PlayerCards = []
     for n in range(len(data)):
+        CardListAll.append(data[n])
+        CardListNameAll.append(unidecode(data[n]['name']).upper())
         if data[n]['is_official'] == True:
             data_official.append(data[n])
             CardListName.append(unidecode(data[n]['name']).upper())
@@ -225,6 +229,10 @@ async def hobimg(ctx, card=None):
         await ctx.send('I am sorry, but I need at least a name to find a card')
     elif len(CardIndexes) == 1:
         await ctx.send(CardList[CardIndexes[0]]['imagesrc'])
+        try:
+            await ctx.send(CardList[CardIndexes[0]]['imagesrc2'])
+        except:
+            pass
     elif len(CardIndexes) == 0:
         await ctx.send(f"No cards found matching '{cc}'.")
     else:
@@ -265,6 +273,79 @@ async def hobimg(ctx, card=None):
                 await ctx.send(CardList[CardIndexes[int(id)-1]]['imagesrc'])
             except:
                 await ctx.send("You have to type the number of the card you want!")
+            try:
+                await ctx.send(CardList[CardIndexes[int(id)-1]]['imagesrc2'])
+            except:
+                pass
+                
+
+@client.command(aliases=['hobimg+'])
+async def hobimgall(ctx, card=None):
+    message = ctx.message.content.split(' ')
+    message.pop(0)
+    cc = message
+    message = " ".join(message)
+    card = unidecode(message).upper()
+    print(f"Looking for: {card}")
+    def search(card_list, string):
+        index_list = []
+        for n in range(len(card_list)):
+            if card_list[n].find(string) != -1:
+                index_list.append(n)
+        return index_list
+    CardIndexes = search(CardListNameAll, card)
+    if len(CardIndexes) == len(CardListAll):
+        await ctx.send('I am sorry, but I need at least a name to find a card')
+    elif len(CardIndexes) == 1:
+        await ctx.send(CardListAll[CardIndexes[0]]['imagesrc'])
+        try:
+            await ctx.send(CardListAll[CardIndexes[0]]['imagesrc2'])
+        except:
+            pass
+    elif len(CardIndexes) == 0:
+        await ctx.send(f"No cards found matching '{cc}'.")
+    else:
+        dict = {"<b>": "**",  # define desired replacements here
+            "</b>": "**", 
+            "<i>": "_", 
+            "</i>": "_", 
+            "lore": "<:lore:1079729387458547752>",
+            "leadership": "<:leadership:1079729503334572032>",
+            "spirit": "<:spirit:1079729428638208032>",
+            "tactics": "<:tactics:1079729464398856252>",
+            "fellowship": "<:fellowship:1079729539342675988>",
+            "baggins": "<:baggins:1079729273004363786>",
+            "none": " ",
+            "neutral": " "
+            } 
+        def replace_all(text, dic):
+            for i, j in dic.items():
+                text = text.replace(i, j)
+            return text
+        cards_found = []
+        if len(CardIndexes) > 20:
+            max = 20
+            await ctx.send(f"I've found {len(CardIndexes)} cards (Sending 20). Reply with the number of the one you want")
+        else:
+            max = len(CardIndexes)
+            await ctx.send(f"I've found {len(CardIndexes)} cards. Reply with the number of the one you want")
+        for ids in range(max):
+            sphere = replace_all(CardListAll[CardIndexes[int(ids)]]['sphere_code'], dict)
+            cards_found.append((f"{ids+1}. {sphere} **{CardListAll[CardIndexes[int(ids)]]['name']}**\n_{CardListAll[CardIndexes[int(ids)]]['type_name']}_ ({CardListAll[CardIndexes[int(ids)]]['pack_name']})"))
+        await ctx.send('\n'.join(cards_found))
+        def check(m):
+            return m.channel == ctx.message.channel #m.author == ctx.author and 
+        for j in range(1):
+            id = await client.wait_for('message', check=check)
+            id = id.content
+            try:
+                await ctx.send(CardListAll[CardIndexes[int(id)-1]]['imagesrc'])
+            except:
+                await ctx.send("You have to type the number of the card you want!")
+            try:
+                await ctx.send(CardListAll[CardIndexes[int(id)-1]]['imagesrc2'])
+            except:
+                pass
 
 
 # CARD OF THE DAY
