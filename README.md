@@ -1,2 +1,2 @@
 # TomBombadil_python
-Guessing game for TomBombadil 
+TomBombadil: discord bot for looking up cards for The Lord of the Rings LCG.
