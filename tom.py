@@ -27,6 +27,9 @@ with open("Cards.json", "r", encoding="utf8") as f:
             if data[n]['type_name'] in ['Ally', 'Hero', 'Attachment', 'Event']:
                 PlayerCards.append(data[n])
 
+with open("Quests.json", 'r', encoding="utf8") as f:
+    Quest = json.load(f)
+
 # @client.command()
 # async def ge(ctx):
 #     print(ctx.guild.emojis)
@@ -207,7 +210,15 @@ async def guess(ctx, max:int=len(data_official)):
                 tries += 1
         else:
             await ctx.send("You have to type `is` followed by the name of the card!")
-    
+
+# RANDOM QUEST
+@client.command()
+async def quest(ctx, max:int=len(Quest)):
+    i = random.randint(1,max)
+    quest = Quest[i]['name']
+    url = Quest[i]['url']
+    await ctx.send(f"Here is a quest for you, {ctx.message.author.mention}!\n\n**{quest}**\n{url}")
+
 
 # SEARCH CARD
 @client.command()
