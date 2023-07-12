@@ -30,10 +30,7 @@ with open("Cards.json", "r", encoding="utf8") as f:
 with open("Quests.json", 'r', encoding="utf8") as f:
     Quest = json.load(f)
 
-# @client.command()
-# async def ge(ctx):
-#     print(ctx.guild.emojis)
-#     await ctx.send(f"<:spirit:1081702484784992289>")
+
 
 # GUESS UNOFFICIAL
 @client.command(aliases=['guess+'])
@@ -219,7 +216,6 @@ async def quest(ctx, max:int=len(Quest)):
     url = Quest[i]['url']
     await ctx.send(f"Here is a quest for you, {ctx.message.author.mention}!\n\n**{quest}**\n{url}")
 
-
 # SEARCH CARD
 @client.command()
 async def hobimg(ctx, card=None):
@@ -289,7 +285,7 @@ async def hobimg(ctx, card=None):
             except:
                 pass
                 
-
+# SEARCH CARD UNOFFICIAL
 @client.command(aliases=['hobimg+'])
 async def hobimgall(ctx, card=None):
     message = ctx.message.content.split(' ')
@@ -358,13 +354,82 @@ async def hobimgall(ctx, card=None):
             except:
                 pass
 
+# SEARCH CARD (ONLY TEXT)
+async def hob(ctx, card=None):
+    message = ctx.message.content.split(' ')
+    message.pop(0)
+    cc = message
+    message = " ".join(message)
+    card = unidecode(message).upper()
+    print(f"Looking for: {card}")
+    def search(card_list, string):
+        index_list = []
+        for n in range(len(card_list)):
+            if card_list[n].find(string) != -1:
+                index_list.append(n)
+        return index_list
+    CardIndexes = search(CardListName, card)
+    if len(CardIndexes) == len(CardList):
+        await ctx.send('I am sorry, but I need at least a name to find a card')
+    elif len(CardIndexes) == 1:
+        await ctx.send(CardList[CardIndexes[0]]['imagesrc'])
+        try:
+            await ctx.send(CardList[CardIndexes[0]]['imagesrc2'])
+        except:
+            pass
+    elif len(CardIndexes) == 0:
+        await ctx.send(f"No cards found matching '{cc}'.")
+    else:
+        dict = {"<b>": "**",  # define desired replacements here
+            "</b>": "**", 
+            "<i>": "_", 
+            "</i>": "_", 
+            "lore": "<:lore:1079729387458547752>",
+            "leadership": "<:leadership:1079729503334572032>",
+            "spirit": "<:spirit:1079729428638208032>",
+            "tactics": "<:tactics:1079729464398856252>",
+            "fellowship": "<:fellowship:1079729539342675988>",
+            "baggins": "<:baggins:1079729273004363786>",
+            "none": " ",
+            "neutral": " "
+            } 
+        def replace_all(text, dic):
+            for i, j in dic.items():
+                text = text.replace(i, j)
+            return text
+        cards_found = []
+        if len(CardIndexes) > 20:
+            max = 20
+            await ctx.send(f"I've found {len(CardIndexes)} cards (Sending 20). Reply with the number of the one you want")
+        else:
+            max = len(CardIndexes)
+            await ctx.send(f"I've found {len(CardIndexes)} cards. Reply with the number of the one you want")
+        for ids in range(max):
+            sphere = replace_all(CardList[CardIndexes[int(ids)]]['sphere_code'], dict)
+            cards_found.append((f"{ids+1}. {sphere} **{CardList[CardIndexes[int(ids)]]['name']}**\n_{CardList[CardIndexes[int(ids)]]['type_name']}_ ({CardList[CardIndexes[int(ids)]]['pack_name']})"))
+        await ctx.send('\n'.join(cards_found))
+        def check(m):
+            return m.channel == ctx.message.channel #m.author == ctx.author and 
+        for j in range(1):
+            id = await client.wait_for('message', check=check)
+            id = id.content
+            try:
+                if CardList[CardIndexes[int(id)-1]]['type_code'] == 'ally':
+                    await ctx.send(CardList[CardIndexes[int(id)-1]])
+                await ctx.send(CardList[CardIndexes[int(id)-1]]['imagesrc'])
+            except:
+                await ctx.send("You have to type the number of the card you want!")
+            try:
+                await ctx.send(CardList[CardIndexes[int(id)-1]]['imagesrc2'])
+            except:
+                pass              
 
 # CARD OF THE DAY
 WHEN = datetime.time(10, 0, 0)  # set time here in UTC - 10:00 AM
 CHANNEL_ID = 1080119360422682746 # Put your channel id here
 
 @tasks.loop(time=WHEN) 
-async def send_message():
+async def card_of_the_day():
     channel = client.get_channel(CHANNEL_ID)
     i = random.randint(1,len(PlayerCards))
     await channel.send("**Card of the day!**")
@@ -376,7 +441,7 @@ async def send_message():
 
 @client.event
 async def on_ready():
-    send_message.start()
+    card_of_the_day.start()
 
 # .day command
 @client.command()
@@ -394,6 +459,7 @@ async def day(ctx):
 
 load_dotenv(find_dotenv())
 client.run(os.getenv('TOKEN'))
+
 
 
 
