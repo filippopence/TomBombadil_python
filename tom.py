@@ -214,7 +214,11 @@ async def quest(ctx, max:int=len(Quest)):
     i = random.randint(1,max)
     quest = Quest[i]['name']
     url = Quest[i]['url']
-    await ctx.send(f"Here is a quest for you, {ctx.message.author.mention}!\n\n**{quest}**\n{url}")
+    product = Quest[i]['product']
+    product = product.replace(" ", "-")
+    name = quest.replace(" ", "-")
+    quest_companion = f"http://www.lotr-lcg-quest-companion.gamersdungeon.net/#{product}-quest-{name}"
+    await ctx.send(f"Here is a quest for you, {ctx.message.author.mention}!\n\n**{quest}**\n[Quest companion](<{quest_companion}>)")
 
 # SEARCH CARD
 @client.command()
